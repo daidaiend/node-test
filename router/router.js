@@ -1,6 +1,7 @@
 const Router = require('koa-router')
 
 const user = require('../control/user')
+const article = require('../control/article')
 const router = new Router
 
 //设计路由
@@ -21,6 +22,10 @@ router.post('/user/login', user.login)
 
 router.get('/user/logout', user.logout)
 
+
+router.get('/article', user.keepLog, article.addPage)
+
+router.post('/article', user.keepLog, article.add)
 
 
 module.exports = router
