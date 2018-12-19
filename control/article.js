@@ -2,6 +2,9 @@ const Article = require('../models/article')
 const { db } = require('../Schema/config')
 
 
+const User = require('../models/user')
+
+
 exports.addPage = async(ctx) => {
     await ctx.render('add-article', {
         title: 'addArticle',
@@ -17,7 +20,7 @@ exports.add = async(ctx) => {
     }
     const data = ctx.request.body
 
-    data.auther = ctx.session.username
+    data.author = ctx.session.uid
 
     await new Promise((resolve, reject) => {
         new Article(data).save((err, data) => {
@@ -34,5 +37,37 @@ exports.add = async(ctx) => {
             msg: '发表失败',
             status: 0
         }
+    })
+}
+
+
+exports.getList = async(ctx) => {
+
+    let page = ctx.params.id
+    page--
+    const maxNum = await Article
+        .estimatedDocumentCount((err, num) => {
+            err ? console.log(err) : num
+        })
+
+    const articleList = await Article
+        .find()
+        .sort('-created')
+        .skip(5 * page)
+        .limit(5)
+        .populate({
+            path: 'author',
+            select: 'username _id avatar'
+        })
+        .then(data => data)
+        .catch(err => {
+            console.log(err)
+        })
+
+    await ctx.render('index', {
+        title: 'index',
+        session: ctx.session,
+        artList: articleList,
+        maxNum
     })
 }
